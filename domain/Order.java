@@ -1,7 +1,7 @@
 package kg.attractor.java.homework.domain;
 
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import kg.attractor.java.homework.util.NotImplementedException;
 
@@ -53,7 +53,66 @@ public class Order {
     //------   Реализация ваших методов должна быть ниже этой линии   ------
     //----------------------------------------------------------------------
 
-    public void calculateTotal() {
-        throw new NotImplementedException("Вам надо реализовать этот метод!");
+    public double calculateTotal() {
+         return total = items.stream()
+                .mapToDouble(Item::getPrice)
+                .sum();
+    }
+
+    public void printOrders(List<Order> orders){
+        orders.forEach(System.out::println);
+    }
+
+    public static List<Order> getTopNOrders(List<Order> orders, int n) {
+        return orders.stream()
+                .sorted(Comparator.comparingDouble(Order::calculateTotal).reversed())
+                .limit(n)
+                .collect(Collectors.toList());
+    }
+
+    public static List<Order> getLowestNOrders(List<Order> orders, int n){
+        return orders.stream()
+                .sorted(Comparator.comparingDouble(Order::calculateTotal))
+                .limit(n)
+                .toList();
+    }
+
+    public static List<Order> getHomeOrders(List<Order> orders) {
+        return orders.stream()
+                .filter(Order::isHomeDelivery)
+                .toList();
+    }
+
+    public static Order getMaxHomeOrder(List<Order> orders) {
+        return getHomeOrders(orders).stream()
+                .max(Comparator.comparingDouble(Order::calculateTotal))
+                .orElse(null);
+    }
+
+    public static Order getMinHomeOrder(List<Order> orders) {
+        return getHomeOrders(orders).stream()
+                .min(Comparator.comparingDouble(Order::calculateTotal))
+                .orElse(null);
+    }
+
+    public static List<Order> getOrdersBetween(List<Order> orders, double minOrderTotal, double maxOrderTotal) {
+        return orders.stream()
+                .filter(o -> {
+                double total = o.calculateTotal();
+                return total>minOrderTotal && total<maxOrderTotal;
+                }).toList();
+    }
+
+    public static double totalSumOrders(List<Order> orders){
+        return orders.stream()
+                .mapToDouble(Order::calculateTotal)
+                .sum();
+    }
+
+    public static List<String> getSortedUniqueEmails(List<Order> orders) {
+        return new ArrayList<>(orders.stream()
+                .map(Order::getCustomer)
+                .map(Customer::getEmail)
+                .collect(Collectors.toCollection(TreeSet::new)));
     }
 }
